@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"log"
+	"os"
+)
 
 type Config struct {
 	Port        string
@@ -13,8 +16,13 @@ func Load() Config {
 		port = "8000"
 	}
 
+	databaseDSN := os.Getenv("DATABASE_DSN")
+	if databaseDSN == "" {
+		log.Fatal("missing database dsn")
+	}
+
 	return Config{
-		Port: port,
-		DatabaseDSN: os.Getenv("DATABASE_DSN"),
+		Port:        port,
+		DatabaseDSN: databaseDSN,
 	}
 }
