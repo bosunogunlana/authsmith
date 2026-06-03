@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,6 +33,7 @@ func RunMigration(db *sql.DB, dirName string) error {
 		if err != nil {
 			return err
 		}
+		log.Printf("%s migrated", migrationFile)
 	}
 
 	return nil
