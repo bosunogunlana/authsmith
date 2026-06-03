@@ -1,0 +1,20 @@
+package config
+
+import "os"
+
+type Config struct {
+	Port        string
+	DatabaseDSN string
+}
+
+func Load() Config {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+
+	return Config{
+		Port: port,
+		DatabaseDSN: os.Getenv("DATABASE_DSN"),
+	}
+}
