@@ -34,6 +34,11 @@ func CreateSession(db *sql.DB, userID, tokenDigest string) (models.Session, erro
 	return session, nil
 }
 
+func DeleteSessionByTokenDigest(db *sql.DB, digest string) error {
+	_, err := db.Exec(`DELETE FROM sessions WHERE token_digest = $1`, digest)
+	return err
+}
+
 func GetSessionByTokenDigest(db *sql.DB, digest string) (models.Session, error) {
 	stmt := `
 		SELECT id, user_id, token_digest, created_at, expires_at

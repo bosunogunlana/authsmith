@@ -12,6 +12,8 @@ func ServerMux(h *handlers.Handlers) *http.ServeMux {
 	mux.HandleFunc("GET /health", h.HealthHandler)
 	mux.HandleFunc("GET /login", h.GetLoginHandler)
 	mux.HandleFunc("POST /login", h.PostLoginHandler)
+	mux.HandleFunc("POST /logout", h.LogoutHandler)
+	mux.HandleFunc("GET /me", h.GetUserProfile)
 
 	return mux
 }

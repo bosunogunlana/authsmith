@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile – Authsmith</title>
+    <style>
+        body  { font-family: sans-serif; max-width: 480px; margin: 80px auto; padding: 0 16px; }
+        h1    { font-size: 1.4rem; margin-bottom: 24px; }
+        table { width: 100%; border-collapse: collapse; }
+        td    { padding: 10px 0; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+        td:first-child { color: #6b7280; width: 140px; font-size: 0.9rem; }
+        a     { color: #2563eb; font-size: 0.9rem; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1>My Profile</h1>
+
+    <table>
+        <tr>
+            <td>ID</td>
+            <td>{{.ID}}</td>
+        </tr>
+        <tr>
+            <td>Name</td>
+            <td>{{.Name}}</td>
+        </tr>
+        <tr>
+            <td>Email</td>
+            <td>{{.Email}}</td>
+        </tr>
+        <tr>
+            <td>Member since</td>
+            <td>{{.CreatedAt.Format "Jan 2, 2006"}}</td>
+        </tr>
+    </table>
+
+    <p style="margin-top: 32px;">
+        <form method="POST" action="/logout">
+            <button type="submit" style="background:none;border:none;color:#2563eb;cursor:pointer;font-size:0.9rem;padding:0;">Sign out</button>
+        </form>
+    </p>
+</body>
+</html>

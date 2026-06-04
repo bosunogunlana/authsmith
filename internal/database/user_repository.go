@@ -31,6 +31,35 @@ func CreateUser(db *sql.DB, email, passwordDigest, name string) (models.User, er
 	return user, nil
 }
 
+func GetUserByID(db *sql.DB, id string) (models.User, error) {
+	stmt := `
+		SELECT id, email, password_digest, name, created_at, updated_at
+		FROM users
+		WHERE id = $1
+	`
+
+	var user models.User
+	row := db.QueryRow(stmt, id)
+	err := row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordDigest,
+		&user.Name,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.User{}, nil
+		}
+
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
 func GetUserByEmail(db *sql.DB, email string) (models.User, error) {
 	stmt := `
 		SELECT id, email, password_digest, name, created_at, updated_at

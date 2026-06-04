@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"net/http"
 	"time"
 
@@ -64,6 +66,29 @@ func (h *Handlers) PostLoginHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	http.Redirect(w, r, "/me", http.StatusSeeOther)
+}
+
+func (h *Handlers) LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	hash := sha256.Sum256([]byte(cookie.Value))
+	digest := hex.EncodeToString(hash[:])
+
+	database.DeleteSessionByTokenDigest(h.DB, digest)
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    "",
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   -1,
+	})
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
 func (h *Handlers) renderLoginError(w http.ResponseWriter, message string) {
