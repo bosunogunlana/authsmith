@@ -6,9 +6,12 @@ import (
 	"github.com/bosunogunlana/authsmith/internal/handlers"
 )
 
-func ServerMux() *http.ServeMux {
+func ServerMux(h *handlers.Handlers) *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health", handlers.HealthHandler)
+
+	mux.HandleFunc("GET /health", h.HealthHandler)
+	mux.HandleFunc("GET /login", h.GetLoginHandler)
+	mux.HandleFunc("POST /login", h.PostLoginHandler)
 
 	return mux
 }
