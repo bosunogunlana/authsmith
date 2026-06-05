@@ -63,7 +63,12 @@ func (h *Handlers) PostLoginHandler(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
-	http.Redirect(w, r, "/me", http.StatusSeeOther)
+	nextLocation := r.URL.Query().Get("next")
+	if nextLocation == "" {
+		nextLocation = "/me"
+	}
+
+	http.Redirect(w, r, nextLocation, http.StatusSeeOther)
 }
 
 func (h *Handlers) LogoutHandler(w http.ResponseWriter, r *http.Request) {
