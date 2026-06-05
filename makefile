@@ -1,4 +1,7 @@
-run:
+build:
+	go build ./...
+
+run: build
 	export $(shell cat .env | xargs) && go run ./cmd/server
 
 seed:

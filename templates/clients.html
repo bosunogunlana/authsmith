@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Clients – Authsmith</title>
+    <style>
+        body  { font-family: sans-serif; max-width: 720px; margin: 80px auto; padding: 0 16px; }
+        h1    { font-size: 1.4rem; margin-bottom: 8px; }
+        .actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        a     { color: #2563eb; text-decoration: none; font-size: 0.9rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th    { text-align: left; padding: 10px 0; border-bottom: 2px solid #e5e7eb; font-size: 0.85rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        td    { padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-size: 0.9rem; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
+        .badge-confidential { background: #dbeafe; color: #1d4ed8; }
+        .badge-public       { background: #dcfce7; color: #15803d; }
+        .empty { color: #9ca3af; margin-top: 48px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="actions">
+        <h1>OAuth Clients</h1>
+        <a href="/developer/clients/new">+ Register new client</a>
+    </div>
+
+    {{if .Clients}}
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Client ID</th>
+                <th>Type</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Clients}}
+            <tr>
+                <td><a href="/developer/clients/{{.ID}}">{{.Name}}</a></td>
+                <td><code>{{.ClientID}}</code></td>
+                <td>
+                    <span class="badge badge-{{.ClientType}}">{{.ClientType}}</span>
+                </td>
+                <td>{{.CreatedAt.Format "Jan 2, 2006"}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+    {{else}}
+    <p class="empty">No clients registered yet. <a href="/developer/clients/new">Register your first client</a>.</p>
+    {{end}}
+</body>
+</html>
