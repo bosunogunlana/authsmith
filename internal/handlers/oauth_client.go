@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"net/http"
 
 	"github.com/bosunogunlana/authsmith/internal/database"
@@ -19,23 +17,13 @@ func (h *Handlers) NewClientHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type clientDetailsPageData struct {
-	Client models.OAuthClient
+	Client    models.OAuthClient
 	RawSecret string
 }
 
 func (h *Handlers) CreateClientHandler(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
-
-	hash := sha256.Sum256([]byte(cookie.Value))
-	digest := hex.EncodeToString(hash[:])
-
-	session, err := database.GetSessionByTokenDigest(h.DB, digest)
-	if err != nil || session.ID == "" {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+	session, ok := h.requireAuth(w, r)
+	if !ok {
 		return
 	}
 
@@ -106,18 +94,8 @@ type clientsPageData struct {
 }
 
 func (h *Handlers) ListClientsHandler(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
-
-	hash := sha256.Sum256([]byte(cookie.Value))
-	digest := hex.EncodeToString(hash[:])
-
-	session, err := database.GetSessionByTokenDigest(h.DB, digest)
-	if err != nil || session.ID == "" {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+	session, ok := h.requireAuth(w, r)
+	if !ok {
 		return
 	}
 
@@ -131,18 +109,8 @@ func (h *Handlers) ListClientsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) ShowClientHandler(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
-
-	hash := sha256.Sum256([]byte(cookie.Value))
-	digest := hex.EncodeToString(hash[:])
-
-	session, err := database.GetSessionByTokenDigest(h.DB, digest)
-	if err != nil || session.ID == "" {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+	session, ok := h.requireAuth(w, r)
+	if !ok {
 		return
 	}
 
@@ -165,7 +133,6 @@ func (h *Handlers) ShowClientHandler(w http.ResponseWriter, r *http.Request) {
 
 	h.Templates.ExecuteTemplate(w, "client_detail.html", clientDetailsPageData{Client: client})
 }
-
 
 func (h *Handlers) renderCreateError(w http.ResponseWriter, messages []string) {
 	h.Templates.ExecuteTemplate(w, "client_new.html", clientNewPageData{Errors: messages})
