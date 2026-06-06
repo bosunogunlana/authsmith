@@ -2,7 +2,6 @@ package oauth
 
 import (
 	"database/sql"
-	"errors"
 	"net/http"
 	"strings"
 
@@ -18,15 +17,6 @@ type AuthorizationRequest struct {
 	CodeChallenge       string
 	CodeChallengeMethod string
 }
-
-var (
-	InvalidResponseCodeError = errors.New("invalid_response_type")
-	InvalidClientIDError     = errors.New("invalid_cliend_id")
-	InvalidRedirectURIError  = errors.New("invalid_redirect_uri")
-	InvalidScopeError        = errors.New("invalid_scope")
-	InvalidStateError        = errors.New("invalid_state")
-	InvalidCodeChallenge     = errors.New("invalid_code_challenge")
-)
 
 func ParseAuthorizationRequest(db *sql.DB, r *http.Request) (AuthorizationRequest, error) {
 	query := r.URL.Query()

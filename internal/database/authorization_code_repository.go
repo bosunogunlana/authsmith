@@ -75,9 +75,14 @@ func GetAuthorizationCodeByDigest(db *sql.DB, digest string) (models.Authorizati
 	return authorizationCode, nil
 }
 
-func MarkAuthorizationCodeUsed(db *sql.DB, id string) error {
-	stmt := `UPDATE oauth_authorization_codes SET used_at = $2 WHERE id = $1`
+func MarkAuthorizationCodeUsed(db *sql.Tx, id string) (int64, error) {
+	stmt := `UPDATE oauth_authorization_codes SET used_at = $2 WHERE id = $1 AND used_at IS NULL`
 
-	_, err := db.Exec(stmt, id, time.Now())
-	return err
+	result, err := db.Exec(stmt, id, time.Now())
+	if err != nil {
+		return 0, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	return rowsAffected, err
 }

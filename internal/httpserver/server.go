@@ -25,6 +25,7 @@ func ServerMux(h *handlers.Handlers) *http.ServeMux {
 	mux.HandleFunc("GET /oauth/authorize", h.AuthorizeHandler)
 	mux.HandleFunc("GET /oauth/consent", h.GetConsentHandler)
 	mux.HandleFunc("POST /oauth/consent", h.PostConsentHandler)
+	mux.HandleFunc("POST /oauth/token", h.PostTokenHandler)
 
 	return mux
 }
