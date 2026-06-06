@@ -3,6 +3,7 @@ package handlers
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -10,8 +11,17 @@ import (
 	"github.com/bosunogunlana/authsmith/internal/oauth"
 )
 
+type tokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	Scope        string `json:"scope"`
+}
+
 func (h *Handlers) PostTokenHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm(); if err != nil {
+	err := r.ParseForm()
+	if err != nil {
 		tokenError(w, "invalid_request", http.StatusBadRequest)
 		return
 	}
@@ -37,7 +47,7 @@ func (h *Handlers) PostTokenHandler(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 	hashedCode := sha256.Sum256([]byte(code))
 	codeDigest := hex.EncodeToString(hashedCode[:])
-	authCode, err := database.GetAuthorizationCodeByDigest(h.DB,codeDigest)
+	authCode, err := database.GetAuthorizationCodeByDigest(h.DB, codeDigest)
 	if err != nil || authCode.ID == "" {
 		tokenError(w, "invalid_grant", http.StatusBadRequest)
 		return
@@ -52,7 +62,7 @@ func (h *Handlers) PostTokenHandler(w http.ResponseWriter, r *http.Request) {
 	codeVerifier := r.FormValue("code_verifier")
 	err = oauth.ValidatePKCE(codeVerifier, authCode.CodeChallenge)
 	if err != nil {
-		tokenError(w, "invalid_grant", http.StatusUnauthorized)
+		tokenError(w, "invalid_grant", http.StatusBadRequest)
 		return
 	}
 
@@ -60,7 +70,7 @@ func (h *Handlers) PostTokenHandler(w http.ResponseWriter, r *http.Request) {
 	txn, err := h.DB.Begin()
 	if err != nil {
 		tokenError(w, "server_error", http.StatusInternalServerError)
-    return
+		return
 	}
 	defer txn.Rollback()
 
@@ -69,12 +79,50 @@ func (h *Handlers) PostTokenHandler(w http.ResponseWriter, r *http.Request) {
 		tokenError(w, "invalid_grant", http.StatusBadRequest)
 		return
 	}
-	// Generate access token
+
+	rawAccessToken, rawAccessDigest, err := oauth.GenerateToken()
+	if err != nil {
+		tokenError(w, "server_error", http.StatusInternalServerError)
+		return
+	}
+
+	rawRefreshToken, rawRefreshDigest, err := oauth.GenerateToken()
+	if err != nil {
+		tokenError(w, "server_error", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = database.CreateAccessToken(txn, rawAccessDigest, authCode.UserID, clientID, authCode.Scopes)
+	if err != nil {
+		tokenError(w, "server_error", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = database.CreateRefreshToken(txn, rawRefreshDigest, authCode.UserID, clientID, authCode.Scopes)
+	if err != nil {
+		tokenError(w, "server_error", http.StatusInternalServerError)
+		return
+	}
 
 	if err := txn.Commit(); err != nil {
 		tokenError(w, "server_error", http.StatusInternalServerError)
-    return
+		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Pragma", "no-cache")
+	w.WriteHeader(http.StatusOK)
+
+	resp := tokenResponse{
+		AccessToken: rawAccessToken,
+		RefreshToken: rawRefreshToken,
+		Scope: authCode.Scopes,
+		ExpiresIn: 3600,
+		TokenType: "Bearer",
+	}
+
+	json.NewEncoder(w).Encode(resp)
 }
 
 func tokenError(w http.ResponseWriter, errCode string, status int) {
