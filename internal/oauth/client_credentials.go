@@ -29,3 +29,7 @@ func GenerateClientSecret() (string, string, error) {
 	digest := hex.EncodeToString(hash[:])
 	return token, digest, nil
 }
+
+func GenerateAuthCode() (string, error) {
+	return "", nil
+}

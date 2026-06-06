@@ -23,6 +23,8 @@ func ServerMux(h *handlers.Handlers) *http.ServeMux {
 	mux.HandleFunc("GET /developer/client/{client_id}", h.ShowClientHandler)
 
 	mux.HandleFunc("GET /oauth/authorize", h.AuthorizeHandler)
+	mux.HandleFunc("GET /oauth/consent", h.GetConsentHandler)
+	mux.HandleFunc("POST /oauth/consent", h.PostConsentHandler)
 
 	return mux
 }
