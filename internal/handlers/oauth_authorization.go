@@ -113,7 +113,7 @@ func (h *Handlers) GetConsentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) PostConsentHandler(w http.ResponseWriter, r *http.Request) {
-	_, ok := h.isAuthenticated(r)
+	session, ok := h.isAuthenticated(r)
 	if !ok {
 		// TODO: Add redirect url with oauth params
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -146,11 +146,37 @@ func (h *Handlers) PostConsentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authCode, err := oauth.GenerateAuthCode()
+	code, digest, err := oauth.GenerateAuthCode()
 	if err != nil {
 		http.Error(w, "internal_server_error", http.StatusInternalServerError)
 		return
 	}
-	params.Set("code", authCode)
+
+	scope := r.FormValue("scope")
+	codeChallenge := r.FormValue("code_challenge")
+	codeChallengeMethod := r.FormValue("code_challenge_method")
+
+	if scope == "" || codeChallenge == "" || codeChallengeMethod == "" {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	_, err = database.CreateAuthorizationCode(
+		h.DB,
+		session.UserID,
+		clientID,
+		redirectURI,
+		scope,
+		digest,
+		codeChallenge,
+		codeChallengeMethod,
+	)
+
+	if err != nil {
+		http.Error(w, "internal_server_error", http.StatusInternalServerError)
+		return
+	}
+
+	params.Set("code", code)
 	http.Redirect(w, r, redirectURI+"?"+params.Encode(), http.StatusSeeOther)
 }
