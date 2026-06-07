@@ -16,7 +16,6 @@ func ServerMux(h *handlers.Handlers) *http.ServeMux {
 	mux.HandleFunc("POST /logout", h.LogoutHandler)
 	mux.HandleFunc("GET /me", h.GetUserProfile)
 
-
 	mux.HandleFunc("GET /developer/clients/new", h.NewClientHandler)
 	mux.HandleFunc("POST /developer/clients", h.CreateClientHandler)
 	mux.HandleFunc("GET /developer/clients", h.ListClientsHandler)
@@ -26,6 +25,9 @@ func ServerMux(h *handlers.Handlers) *http.ServeMux {
 	mux.HandleFunc("GET /oauth/consent", h.GetConsentHandler)
 	mux.HandleFunc("POST /oauth/consent", h.PostConsentHandler)
 	mux.HandleFunc("POST /oauth/token", h.PostTokenHandler)
+
+	// APIs
+	mux.HandleFunc("GET /api/user", h.GetAPIUserProfileHandler)
 
 	return mux
 }

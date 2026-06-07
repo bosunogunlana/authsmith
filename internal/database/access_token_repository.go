@@ -15,7 +15,7 @@ func CreateAccessToken(db *sql.Tx, tokenDigest, userID, clientID, scopes string)
 	`
 
 	var acessToken models.AccessToken
-	
+
 	expiresAt := time.Now().Add(1 * time.Hour)
 	row := db.QueryRow(stmt, tokenDigest, userID, clientID, scopes, expiresAt)
 	err := row.Scan(
@@ -35,18 +35,18 @@ func CreateAccessToken(db *sql.Tx, tokenDigest, userID, clientID, scopes string)
 	return acessToken, nil
 }
 
-func GetAccessTokenBydigest(db *sql.DB, tokenDigest string) (models.AccessToken, error) {
+func GetAccessTokenByDigest(db *sql.DB, tokenDigest string) (models.AccessToken, error) {
 	stmt := `
 		SELECT id, token_digest, user_id, client_id, scopes, expires_at, revoked_at, created_at
 		FROM oauth_access_tokens
-		WHERE expires_at > $1 AND revoked_at is NULL
+		WHERE token_digest = $1 AND expires_at > $2 AND revoked_at is NULL
 	`
 
 	var acessToken models.AccessToken
 
-	row := db.QueryRow(stmt, time.Now())
+	row := db.QueryRow(stmt, tokenDigest, time.Now())
 	err := row.Scan(
-	  &acessToken.ID,
+		&acessToken.ID,
 		&acessToken.TokenDigest,
 		&acessToken.UserID,
 		&acessToken.ClientID,

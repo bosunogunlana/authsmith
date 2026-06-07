@@ -40,12 +40,12 @@ func GetRefreshTokenBydigest(db *sql.DB, tokenDigest string) (models.RefreshToke
 	stmt := `
 		SELECT id, token_digest, user_id, client_id, scopes, expires_at, used_at, revoked_at, created_at
 		FROM oauth_refresh_tokens
-		WHERE expires_at > $1 AND revoked_at IS NULL AND used_at IS NULL
+		WHERE tokenDigest = $1 AND expires_at > $1 AND revoked_at IS NULL AND used_at IS NULL
 	`
 
 	var refreshToken models.RefreshToken
 
-	row := db.QueryRow(stmt, time.Now())
+	row := db.QueryRow(stmt, tokenDigest, time.Now())
 	err := row.Scan(
 	  &refreshToken.ID,
 		&refreshToken.TokenDigest,
